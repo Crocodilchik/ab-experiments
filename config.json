@@ -1,0 +1,48 @@
+{
+  "protocol": {
+    "experiment_id": "listing_card_v1",
+    "start_at": "2026-11-02T00:00:00Z",
+    "enrollment_days": 14,
+    "outcome_window_hours": 24,
+    "expected_variant_b_probability": 0.5,
+    "baseline_contact_probability": 0.12,
+    "planning_contact_effect": 0.012,
+    "alpha": 0.05,
+    "target_power": 0.8,
+    "business_contact_effect": 0.005,
+    "max_error_increase": 0.005,
+    "srm_alpha": 0.001,
+    "ci_method": "newcomb"
+  },
+  "simulation": {
+    "seed": 42,
+    "daily_users_mean": 3000,
+    "duplicate_event_probability": 0.01,
+    "scenarios": {
+      "null": {
+        "scenario_id": 1,
+        "actual_variant_b_probability": 0.5,
+        "A": {"view_probability": 0.6, "contact_given_view_probability": 0.2, "error_probability": 0.02},
+        "B": {"view_probability": 0.6, "contact_given_view_probability": 0.2, "error_probability": 0.02}
+      },
+      "uplift": {
+        "scenario_id": 2,
+        "actual_variant_b_probability": 0.5,
+        "A": {"view_probability": 0.6, "contact_given_view_probability": 0.2, "error_probability": 0.02},
+        "B": {"view_probability": 0.66, "contact_given_view_probability": 0.2, "error_probability": 0.02}
+      },
+      "harmful": {
+        "scenario_id": 3,
+        "actual_variant_b_probability": 0.5,
+        "A": {"view_probability": 0.6, "contact_given_view_probability": 0.2, "error_probability": 0.02},
+        "B": {"view_probability": 0.66, "contact_given_view_probability": 0.2, "error_probability": 0.04}
+      },
+      "broken_assignment": {
+        "scenario_id": 4,
+        "actual_variant_b_probability": 0.4,
+        "A": {"view_probability": 0.6, "contact_given_view_probability": 0.2, "error_probability": 0.02},
+        "B": {"view_probability": 0.66, "contact_given_view_probability": 0.2, "error_probability": 0.02}
+      }
+    }
+  }
+}

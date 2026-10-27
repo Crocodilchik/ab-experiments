@@ -1,0 +1,112 @@
+# Учебные материалы; открываем путь только к итоговому автономному дашборду.
+/learning/*
+!/learning/release_case/
+/learning/release_case/*
+!/learning/release_case/dashboard/
+/learning/release_case/dashboard/*
+
+# Сгенерированные данные и тяжёлые результаты полного запуска.
+/data/
+/reports/
+/artifacts/
+/outputs/
+/exports/
+dashboard.html
+dashboard_data.json
+dashboard_manifest.json
+
+# Локальные окружения и временные файлы установки.
+.venv/
+venv/
+env/
+.env/
+.setup-tmp/
+.test-tmp/
+/tmp/
+/temp/
+
+# Кэши Python, Jupyter, проверок и сборки пакетов.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.tox/
+.nox/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+.eggs/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Локальные настройки редакторов, агентов и операционной системы.
+.idea/
+.vscode/
+.codex/
+.agents/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Локальная конфигурация; обезличенные шаблоны можно хранить в Git.
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
+
+# Логи, резервные копии и временные файлы редакторов.
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+
+# Бинарные наборы данных, локальные базы и сериализованные модели.
+*.parquet
+*.feather
+*.arrow
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+*.duckdb
+*.duckdb.wal
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Архивы и скомпилированные файлы.
+*.zip
+*.7z
+*.rar
+*.tar
+*.tgz
+*.gz
+*.bz2
+*.xz
+*.exe
+*.dll
+*.pyd
+*.so
+*.dylib
+
+# Данные, стили и Plotly уже встроены в этот HTML; соседние JSON не нужны для просмотра.
+!/learning/release_case/dashboard/dashboard.html

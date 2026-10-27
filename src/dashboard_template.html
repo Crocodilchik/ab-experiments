@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A/B-эксперимент карточки объявления — учебная симуляция</title>
+<style>
+:root{color-scheme:light;font-family:"Segoe UI",Arial,sans-serif;color:#17243b;background:#f3f6fb;font-size:15px}
+*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #dbe3ee;padding:25px max(22px,calc((100vw - 1200px)/2))}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#52637d;font-weight:700}h1{font-size:30px;line-height:1.2;letter-spacing:-.02em;margin:10px 0}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.subtitle,.note{color:#52637d;line-height:1.55}.subtitle{margin:8px 0 0}
+label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}select{font:inherit;min-width:205px;border:1px solid #bac9db;border-radius:9px;padding:10px;background:white;color:#17243b}select:focus{outline:3px solid #bfdbfe}
+main{max-width:1240px;margin:24px auto;padding:0 20px 36px}.decision{border:1px solid #f5cf80;border-left:5px solid #c77b06;background:#fffaf0;border-radius:12px;padding:20px 24px;margin-bottom:18px}
+.decision[data-status="recommend_further_check"]{border-color:#94d3b9;border-left-color:#15805e;background:#f1fbf6}.decision[data-status="invalid"],.decision[data-status="guardrail_harm"]{border-color:#efb8b2;border-left-color:#b53425;background:#fff5f3}
+.decision h2{font-size:19px;margin:0 0 8px}.decision p{margin:0;line-height:1.6}.diagnostic{font-weight:650;color:#a12a20;margin-top:10px!important}.diagnostic-tag{display:none;color:#a12a20;font-size:12px;font-weight:600;margin-left:6px}main[data-diagnostic="true"] .diagnostic-tag{display:inline}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}.card,.panel{background:#fff;border:1px solid #dbe3ee;border-radius:12px}.card{padding:20px}.card-title{font-size:13px;color:#52637d}.card-value{font-size:28px;font-weight:700;letter-spacing:-.03em;margin:8px 0}.card-note{font-size:12px;color:#52637d;line-height:1.5}
+.panel{padding:22px;margin-bottom:18px;min-width:0}.panel h2{font-size:19px;margin:0 0 8px}.panel h3{font-size:16px;margin:14px 0 6px}.note{font-size:13px;margin:5px 0 12px}.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.plot{width:100%;min-height:210px}.statline{line-height:1.65;font-size:14px;min-height:48px}
+dl.passport{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin:18px 0 0}dt{font-size:12px;color:#52637d;margin-bottom:5px}dd{margin:0;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.legend-line{display:inline-block;width:25px;vertical-align:middle;border-top:2px dashed #b45309;margin:0 6px 3px 0}.legend-zero{border-top-style:solid;border-color:#64748b;margin-left:16px}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:10px 12px;border-bottom:1px solid #e6edf5;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{font-size:12px;color:#52637d;font-weight:600;background:#f8fafc}
+.variant-a{color:#2563eb;font-weight:700}.variant-b{color:#0f766e;font-weight:700}details summary{cursor:pointer;font-weight:650;padding:5px 0}footer{color:#64748b;font-size:12px;line-height:1.7;margin:24px 4px 0}#load-error{background:#fff0ee;border:1px solid #efb8b2;padding:20px;border-radius:10px;margin-bottom:18px}#dashboard[aria-busy="true"] .plot{opacity:.35}#loading{color:#52637d;font-size:13px}noscript{display:block;margin:20px;padding:20px;background:white}
+@media(max-width:850px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}dl.passport{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){h1{font-size:24px}.toolbar{display:block}header{padding:20px}.picker{margin-top:18px}select{width:100%}main{padding:0 10px}.panel,.card{padding:16px}.decision{padding:16px}.card-value{font-size:24px}dl.passport{grid-template-columns:1fr}th,td{padding:9px 8px}}
+</style>
+<script>__PLOTLY_BUNDLE__</script>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Учебная симуляция · Синтетические данные</div>
+  <div class="toolbar">
+    <div><h1>Карточка объявления: A/B-эксперимент</h1><p class="subtitle">Контакты с продавцом, неопределённость эффекта и технические ошибки</p></div>
+    <div class="picker"><label for="scenario-select">Сценарий</label><select id="scenario-select" disabled></select></div>
+  </div>
+</header>
+<noscript>Для интерактивных графиков нужен JavaScript. Все данные и библиотеки уже включены в этот файл.</noscript>
+<main id="dashboard" aria-busy="true">
+  <p id="loading" role="status">Загрузка графиков…</p>
+  <div id="load-error" role="alert" hidden></div>
+  <section class="decision" id="decision" aria-live="polite">
+    <h2 id="decision-title">Подготовка результата</h2><p id="decision-reason"></p>
+    <p class="diagnostic" id="diagnostic-note" hidden>Продуктовый вывод заблокирован. Все оценки и графики этого сценария имеют только диагностический смысл.</p>
+  </section>
+  <section class="cards" aria-label="Основные показатели">
+    <article class="card"><div class="card-title"><span class="variant-a">A</span> · Контактная конверсия</div><div class="card-value" id="rate-a">—</div><div class="card-note" id="count-a"></div></article>
+    <article class="card"><div class="card-title"><span class="variant-b">B</span> · Контактная конверсия</div><div class="card-value" id="rate-b">—</div><div class="card-note" id="count-b"></div></article>
+    <article class="card"><div class="card-title">Разница B − A</div><div class="card-value" id="difference">—</div><div class="card-note" id="relative"></div></article>
+    <article class="card"><div class="card-title">Распределение назначений · SRM</div><div class="card-value" id="srm-status">—</div><div class="card-note" id="srm-detail"></div></article>
+  </section>
+  <section class="panel" aria-labelledby="passport-title"><h2 id="passport-title">Паспорт эксперимента</h2><dl class="passport" id="passport"></dl></section>
+  <section class="panel"><h2>Воронка A/B <span class="diagnostic-tag">Диагностика</span></h2>
+    <p class="note">Каждый этап — уникальные пользователи. Все доли считаются от назначенных в соответствующий вариант, включая людей без событий.</p>
+    <div class="plot" id="funnel" role="img" aria-label="Воронка по назначенным пользователям"></div>
+    <p class="note" id="conditional"></p>
+  </section>
+  <section class="panel"><h2>Эффект и защита <span class="diagnostic-tag">Диагностика</span></h2>
+    <p class="note"><span class="legend-line"></span>Порог из протокола <span class="legend-line legend-zero"></span>Нулевая разница. Точка — оценка B − A, отрезок — двусторонний интервал Newcombe.</p>
+    <div class="split">
+      <div><h3>Контактная конверсия</h3><div class="statline" id="primary-summary"></div><div class="plot" id="primary" role="img" aria-label="Разница контактной конверсии и интервал"></div><p class="note" id="primary-threshold"></p></div>
+      <div><h3>Технические ошибки</h3><div class="statline" id="guardrail-summary"></div><div class="plot" id="guardrail" role="img" aria-label="Разница доли ошибок и интервал"></div><p class="note" id="guardrail-threshold"></p></div>
+    </div>
+  </section>
+  <section class="panel"><h2>Динамика по дню назначения <span class="diagnostic-tag">Диагностика</span></h2>
+    <p class="note">Полные индивидуальные окна. Динамика служит диагностикой, а не основанием для досрочной остановки. Контакт на следующий день относится к дню назначения человека.</p>
+    <div class="split"><div><h3>Число назначений</h3><div class="plot" id="daily-count" role="img" aria-label="Назначения по дням UTC"></div></div><div><h3>Контактная конверсия</h3><div class="plot" id="daily-rate" role="img" aria-label="Конверсия по дням назначения UTC"></div></div></div>
+  </section>
+  <section class="panel"><details><summary>Состав групп: платформа и новые пользователи</summary><p class="note">Описательная диагностика признаков до назначения. Доли — внутри A или B. Сегментные p-value и выбор победителя по сегментам не рассчитываются.</p><div class="table-wrap"><table><thead><tr><th>Признак</th><th>Пользователи A</th><th>Доля A</th><th>Пользователи B</th><th>Доля B</th></tr></thead><tbody id="balance"></tbody></table></div></details></section>
+  <footer>Один финальный анализ после завершения сбора. Решение использует неокруглённые значения; отображение округлено. Проценты описывают доли, процентные пункты — их разность. Интервалы не гарантируют результат будущего запуска. Данные и Plotly встроены в HTML; подключение к интернету и Python-сервер для просмотра не нужны.</footer>
+</main>
+<script type="application/json" id="dashboard-data">__DASHBOARD_PAYLOAD__</script>
+<script>
+"use strict";
+const payload = JSON.parse(document.getElementById("dashboard-data").textContent);
+const picker = document.getElementById("scenario-select");
+const dashboard = document.getElementById("dashboard");
+const number = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 0});
+function fmt(value, digits=2) { return value == null ? "не определено" : new Intl.NumberFormat("ru-RU", {minimumFractionDigits: digits, maximumFractionDigits: digits}).format(value); }
+function percent(value) { return value == null ? "не определено" : fmt(100 * value) + "%"; }
+function pp(value) { return value == null ? "не определено" : (value > 0 ? "+" : "") + fmt(100 * value) + " п.п."; }
+function pvalue(value) { return value == null ? "не рассчитывался" : value === 0 ? "меньше машинной точности" : value < 0.0001 ? value.toExponential(2) : fmt(value, 5); }
+function text(id, value) { document.getElementById(id).textContent = value; }
+function interval(metric) { return metric.interval ? fmt(100 * metric.interval.confidence_level, 0) + "% интервал: [" + pp(metric.interval.lower) + "; " + pp(metric.interval.upper) + "]" : "Интервал не рассчитан: метод неприменим"; }
+function passport(rows) {
+  const node = document.getElementById("passport"); node.replaceChildren();
+  for (const [label, value] of rows) {const div = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd"); dt.textContent = label; dd.textContent = value; div.append(dt, dd); node.append(div);}
+}
+function date(value) { return value ? value.slice(0, 16).replace("T", " ") + " UTC" : "не определено"; }
+function balanceTable(model) {
+  const body = document.getElementById("balance"); body.replaceChildren();
+  const rows = new Map();
+  for (const row of model.balance) { const key = row.feature + ":" + row.level; if (!rows.has(key)) rows.set(key, {feature: row.feature, level: row.level, A: 0, B: 0}); rows.get(key)[row.variant] = row.n_users; }
+  for (const row of rows.values()) {
+    const tr = document.createElement("tr");
+    const label = (row.feature === "platform" ? "Платформа: " : "Тип пользователя: ") + row.level;
+    for (const value of [label, number.format(row.A), percent(model.groups.A.n_users ? row.A / model.groups.A.n_users : null), number.format(row.B), percent(model.groups.B.n_users ? row.B / model.groups.B.n_users : null)]) {const td = document.createElement("td"); td.textContent = value; tr.append(td);}
+    body.append(tr);
+  }
+  if (!rows.size) {const tr = document.createElement("tr"), td = document.createElement("td"); td.colSpan = 5; td.textContent = "Нет назначенных участников"; tr.append(td); body.append(tr);}
+}
+async function render(key) {
+  const model = payload.scenarios[key];
+  picker.disabled = true; dashboard.setAttribute("aria-busy", "true"); document.getElementById("loading").hidden = false;
+  try {
+    dashboard.dataset.diagnostic = String(model.diagnostic_only);
+    document.getElementById("decision").dataset.status = model.decision.status;
+    text("decision-title", model.decision_label); text("decision-reason", model.decision.reason);
+    document.getElementById("diagnostic-note").hidden = !model.diagnostic_only;
+    for (const v of ["A", "B"]) {text("rate-" + v.toLowerCase(), percent(model.primary[v].rate)); text("count-" + v.toLowerCase(), number.format(model.groups[v].n_contact) + " с контактом / " + number.format(model.groups[v].n_users) + " назначены");}
+    text("difference", pp(model.primary.difference));
+    text("relative", "Относительно A: " + (model.primary.relative_change_percent == null ? "не определено" : fmt(model.primary.relative_change_percent) + "%"));
+    text("srm-status", model.srm.passed ? "Пройден" : model.srm.applicable ? "Не пройден" : "Неприменим");
+    text("srm-detail", "p = " + pvalue(model.srm.p_value) + "; порог " + fmt(model.parameters.srm_alpha, 3));
+    passport([
+      ["Эксперимент", model.experiment_id], ["Набор, левая граница включена", date(model.passport.start_at)], ["Окончание набора, граница исключена", date(model.passport.enrollment_end)],
+      ["Окончание сбора событий", date(model.passport.collection_end)], ["Индивидуальное окно", model.passport.outcome_window_hours + " часа; правая граница исключена"],
+      ["Зрелость окон", model.passport.all_windows_mature ? "Все окна созрели" : "Не подтверждена"], ["Назначены A / B", number.format(model.groups.A.n_users) + " / " + number.format(model.groups.B.n_users)],
+      ["Ожидаемое назначение A / B", percent(1 - model.parameters.expected_variant_b_probability) + " / " + percent(model.parameters.expected_variant_b_probability)],
+      ["Размер относительно плана", number.format(model.sample_size.required_per_arm) + " на вариант; " + (model.sample_size.below_planned_size ? "есть недобор" : "недобора нет")]
+    ]);
+    text("conditional", "Контакт среди просмотревших: A — " + percent(model.groups.A.n_listing_view ? model.groups.A.n_contact / model.groups.A.n_listing_view : null) + "; B — " + percent(model.groups.B.n_listing_view ? model.groups.B.n_contact / model.groups.B.n_listing_view : null) + ". Отдельная диагностика, не основная причинная оценка.");
+    text("primary-summary", "B − A: " + pp(model.primary.difference) + " · " + interval(model.primary) + " · p = " + pvalue(model.primary.test ? model.primary.test.p_value : null));
+    text("guardrail-summary", "B − A: " + pp(model.guardrail.difference) + " · " + interval(model.guardrail));
+    text("primary-threshold", "Бизнес-порог: " + pp(model.parameters.business_contact_effect) + " Для рекомендации нижняя граница должна быть строго выше порога при выполнении остальных условий.");
+    const guardLabels = {passed: "пройдена", harm: "подтверждён вред", unconfirmed: "безопасность не подтверждена", not_assessed: "не оценивается из-за недостоверности"};
+    text("guardrail-threshold", "Допустимый рост: " + pp(model.parameters.max_error_increase) + " Защита: " + guardLabels[model.decision.guardrail_status] + ". Положительный эффект означает больше ошибок.");
+    balanceTable(model);
+    await Promise.all(Object.entries(model.figures).map(([id, fig]) => Plotly.react(id, fig.data, fig.layout, {responsive: true, displaylogo: false, modeBarButtonsToRemove: ["select2d", "lasso2d"]})));
+    dashboard.dataset.scenario = key; document.getElementById("load-error").hidden = true;
+  } catch (error) {
+    text("load-error", "Не удалось отобразить графики. Попробуйте открыть HTML в современном браузере."); document.getElementById("load-error").hidden = false; console.error(error);
+  } finally { dashboard.setAttribute("aria-busy", "false"); picker.disabled = false; document.getElementById("loading").hidden = true; }
+}
+for (const key of payload.scenario_order) { const option = document.createElement("option"); option.value = key; option.textContent = key; picker.append(option); }
+picker.addEventListener("change", () => {window.dashboardReady = render(picker.value);});
+window.dashboardReady = render(picker.value);
+</script>
+</body>
+</html>
